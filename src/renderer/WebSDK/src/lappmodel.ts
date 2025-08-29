@@ -44,6 +44,8 @@ import { LAppPal } from "./lapppal";
 import { TextureInfo } from "./lapptexturemanager";
 import { LAppWavFileHandler } from "./lappwavfilehandler";
 import { CubismMoc } from "@framework/model/cubismmoc";
+// @ts-ignore
+import { audioManager } from "../../src/utils/audio-manager";
 
 enum LoadStep {
   LoadAssets,
@@ -76,6 +78,8 @@ enum LoadStep {
  * モデル生成、機能コンポーネント生成、更新処理とレンダリングの呼び出しを行う。
  */
 export class LAppModel extends CubismUserModel {
+  // Add property to store the enableIdleAudio setting
+  private _enableIdleAudio: boolean = true;
   /**
    * model3.jsonが置かれたディレクトリとファイルパスからモデルを生成する
    * @param dir
@@ -102,6 +106,14 @@ export class LAppModel extends CubismUserModel {
         // model3.json読み込みでエラーが発生した時点で描画は不可能なので、setupせずエラーをcatchして何もしない
         CubismLogError(`Failed to load file ${this._modelHomeDir}${fileName}`);
       });
+  }
+
+  /**
+   * Update the enableIdleAudio setting
+   * @param enable Whether to enable Idle audio playback
+   */
+  public setEnableIdleAudio(enable: boolean): void {
+    this._enableIdleAudio = enable;
   }
 
   /**
@@ -557,10 +569,20 @@ export class LAppModel extends CubismUserModel {
     this._model.loadParameters(); // 前回セーブされた状態をロード
     if (this._motionManager.isFinished()) {
       // モーションの再生がない場合、待機モーションの中からランダムで再生する
-      this.startRandomMotion(
-        LAppDefine.MotionGroupIdle,
-        LAppDefine.PriorityIdle
-      );
+      // 但是要检查是否启用了Idle音频
+      if (this._enableIdleAudio) {
+        if (LAppDefine.DebugLogEnable) {
+          console.log('[APP] Starting Idle motion because enableIdleAudio is true');
+        }
+        this.startRandomMotion(
+          LAppDefine.MotionGroupIdle,
+          LAppDefine.PriorityIdle
+        );
+      } else {
+        if (LAppDefine.DebugLogEnable) {
+          console.log('[APP] Skipping Idle motion because enableIdleAudio is false');
+        }
+      }
     } else {
       motionUpdated = this._motionManager.updateMotion(
         this._model,
@@ -737,7 +759,59 @@ export class LAppModel extends CubismUserModel {
       if (LAppDefine.DebugLogEnable) {
         console.log(`[APP] startMotion: Motion '${name}' found in cache. Starting.`);
       }
-      motion.setFinishedMotionHandler(onFinishedMotionHandler);
+      // 创建自定义的完成回调来处理音频停止
+      const customOnFinishedMotionHandler = (self: any) => {
+        // 停止与该动作关联的音频
+        if (audioManager.hasCurrentAudio()) {
+          audioManager.stopCurrentAudioAndLipSync();
+        }
+        
+        // 调用原始的完成回调（如果存在）
+        if (onFinishedMotionHandler) {
+          onFinishedMotionHandler(self);
+        }
+      };
+      
+      const voice = this._modelSetting.getMotionSoundFileName(group, no);
+
+      // Check if this is an Idle motion and if Idle audio is enabled
+      const isIdleMotion = group === LAppDefine.MotionGroupIdle;
+      
+      if (voice.localeCompare('') != 0) {
+        let path = voice;
+        path = this._modelHomeDir + path;
+        console.log(`sakura enableIdleAudio: ${this._enableIdleAudio}`)
+        // For Idle motions, check if Idle audio is enabled
+        if (isIdleMotion && !this._enableIdleAudio) {
+          console.log('[APP] Skipping Idle audio playback as enableIdleAudio is false');
+        } else {
+          // 使用全局音频管理器播放音频
+          try {
+            const audio = new Audio(path);
+            audioManager.setCurrentAudio(audio, this);
+            audio.play().catch(error => {
+              console.error('Failed to play idle motion audio:', error);
+              audioManager.clearCurrentAudio(audio);
+            });
+            
+            // 仍然启动wavFileHandler用于唇形同步
+            this._wavFileHandler.start(path);
+            
+            // 监听音频结束事件
+            audio.addEventListener('ended', () => {
+              audioManager.clearCurrentAudio(audio);
+            });
+            
+            audio.addEventListener('error', (error) => {
+              console.error('Idle motion audio playback error:', error);
+              audioManager.clearCurrentAudio(audio);
+            });
+          } catch (error) {
+            console.error('Error setting up idle motion audio:', error);
+          }
+        }
+      }
+      motion.setFinishedMotionHandler(customOnFinishedMotionHandler);
       // Start the motion if found in cache
       return this._motionManager.startMotionPriority(
           motion,
@@ -1318,6 +1392,10 @@ export class LAppModel extends CubismUserModel {
   _modelSetting: ICubismModelSetting; // モデルセッティング情報
   _modelHomeDir: string; // モデルセッティングが置かれたディレクトリ
   _userTimeSeconds: number; // デルタ時間の積算値[秒]
+  
+  // Idle动作时间控制
+  _lastIdleMotionTime: number = 0; // 上次播放Idle动作的时间
+  _idleMotionInterval: number = 5.0; // Idle动作播放间隔（秒），可根据需要调整
 
   _eyeBlinkIds: csmVector<CubismIdHandle>; // モデルに設定された瞬き機能用パラメータID
   _lipSyncIds: csmVector<CubismIdHandle>; // モデルに設定されたリップシンク機能用パラメータID

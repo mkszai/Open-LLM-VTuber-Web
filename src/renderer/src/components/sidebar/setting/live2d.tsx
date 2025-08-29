@@ -46,6 +46,12 @@ function live2D({ onSave, onCancel }: live2DProps): JSX.Element {
         checked={modelInfo.scrollToResize ?? true}
         onChange={(checked) => handleInputChange('scrollToResize', checked)}
       />
+      
+      <SwitchField
+        label={t('settings.live2d.enableIdleAudio')}
+        checked={modelInfo.enableIdleAudio ?? true}
+        onChange={(checked) => handleInputChange('enableIdleAudio', checked)}
+      />
     </Stack>
   );
 }

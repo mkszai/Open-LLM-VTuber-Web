@@ -138,7 +138,28 @@ export const useLive2DModel = ({
         console.error('Error processing model URL:', error);
       }
     }
-  }, [modelInfo?.url, modelInfo?.kScale]);
+    
+    // Update the enableIdleAudio setting on the model when it changes
+    const updateIdleAudioSetting = () => {
+      const adapter = (window as any).getLAppAdapter?.();
+      if (adapter) {
+        const model = adapter.getModel();
+        if (model && typeof model.setEnableIdleAudio === 'function') {
+          const enableIdleAudio = modelInfo?.enableIdleAudio !== false; // Default to true if undefined
+          model.setEnableIdleAudio(enableIdleAudio);
+          console.log(`[Live2D] Updated enableIdleAudio setting to: ${enableIdleAudio}`);
+        }
+      }
+    };
+
+    // Update the setting after a short delay to ensure the model is loaded
+    const timer = setTimeout(updateIdleAudioSetting, 1000);
+    
+    // Also update the setting immediately if the model is already loaded
+    updateIdleAudioSetting();
+    
+    return () => clearTimeout(timer);
+  }, [modelInfo?.url, modelInfo?.kScale, modelInfo?.enableIdleAudio]);
 
   const getModelPosition = useCallback(() => {
     const adapter = (window as any).getLAppAdapter?.();

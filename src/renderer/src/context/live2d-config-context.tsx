@@ -71,6 +71,9 @@ export interface ModelInfo {
 
   /** Initial scale */
   initialScale?: number;
+
+  /** Enable idle audio playback */
+  enableIdleAudio?: boolean;
 }
 
 /**
@@ -90,6 +93,7 @@ interface Live2DConfigState {
 const DEFAULT_CONFIG = {
   modelInfo: {
     scrollToResize: true,
+    enableIdleAudio: true, // 默认启用Idle音频
   } as ModelInfo | undefined,
   isLoading: false,
 };
@@ -140,6 +144,10 @@ export function Live2DConfigProvider({ children }: { children: React.ReactNode }
         "scrollToResize" in info
           ? info.scrollToResize
           : (modelInfo?.scrollToResize ?? true),
+      enableIdleAudio:
+        "enableIdleAudio" in info
+          ? info.enableIdleAudio
+          : (modelInfo?.enableIdleAudio ?? true),
     });
   };
 

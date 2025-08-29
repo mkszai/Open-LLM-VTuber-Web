@@ -32,7 +32,8 @@
     },
     "live2d": {
       "pointerInteractive": "Pointer Interactive",
-      "scrollToResize": "Enable Scroll to Resize"
+      "scrollToResize": "Enable Scroll to Resize",
+      "enableIdleAudio": "Enable Idle Motion Audio"
     },
     "asr": {
       "autoStopMic": "Auto Stop Mic When AI Start Speaking",

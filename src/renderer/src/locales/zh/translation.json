@@ -30,7 +30,8 @@
     },
     "live2d": {
       "pointerInteractive": "鼠标交互",
-      "scrollToResize": "启用滚轮缩放"
+      "scrollToResize": "启用滚轮缩放",
+      "enableIdleAudio": "启用待机动作音频"
     },
     "asr": {
       "autoStopMic": "AI开始说话时自动关闭麦克风",
