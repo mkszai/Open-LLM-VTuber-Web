@@ -80,6 +80,8 @@ enum LoadStep {
 export class LAppModel extends CubismUserModel {
   // Add property to store the enableIdleAudio setting
   private _enableIdleAudio: boolean = true;
+  // Add property to store the idle motion interval setting
+  private _idleMotionInterval: number = 30.0; // Default to 30 seconds
   /**
    * model3.jsonが置かれたディレクトリとファイルパスからモデルを生成する
    * @param dir
@@ -114,6 +116,14 @@ export class LAppModel extends CubismUserModel {
    */
   public setEnableIdleAudio(enable: boolean): void {
     this._enableIdleAudio = enable;
+  }
+
+  /**
+   * Update the idle motion interval setting
+   * @param interval The interval in seconds between idle motions
+   */
+  public setIdleMotionInterval(interval: number): void {
+    this._idleMotionInterval = Math.max(0.1, interval); // Minimum 0.1 seconds
   }
 
   /**
@@ -571,13 +581,18 @@ export class LAppModel extends CubismUserModel {
       // モーションの再生がない場合、待機モーションの中からランダムで再生する
       // 但是要检查是否启用了Idle音频
       if (this._enableIdleAudio) {
-        if (LAppDefine.DebugLogEnable) {
-          console.log('[APP] Starting Idle motion because enableIdleAudio is true');
+        // Check if enough time has passed since the last idle motion
+        if (this._userTimeSeconds - this._lastIdleMotionTime >= this._idleMotionInterval) {
+          if (LAppDefine.DebugLogEnable) {
+            console.log(`[APP] Starting Idle motion because enableIdleAudio is true and ${this._idleMotionInterval} seconds have passed`);
+          }
+          this.startRandomMotion(
+            LAppDefine.MotionGroupIdle,
+            LAppDefine.PriorityIdle
+          );
+          // Update the last idle motion time
+          this._lastIdleMotionTime = this._userTimeSeconds;
         }
-        this.startRandomMotion(
-          LAppDefine.MotionGroupIdle,
-          LAppDefine.PriorityIdle
-        );
       } else {
         if (LAppDefine.DebugLogEnable) {
           console.log('[APP] Skipping Idle motion because enableIdleAudio is false');

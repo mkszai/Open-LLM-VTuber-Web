@@ -33,7 +33,9 @@
     "live2d": {
       "pointerInteractive": "Pointer Interactive",
       "scrollToResize": "Enable Scroll to Resize",
-      "enableIdleAudio": "Enable Idle Motion Audio"
+      "enableIdleAudio": "Enable Idle Motion Audio",
+      "idleMotionInterval": "Idle Motion Interval",
+      "idleMotionIntervalHelp": "Time interval (in seconds) between idle motions. Default is 30 seconds. Minimum 0.1 seconds, maximum 60 seconds."
     },
     "asr": {
       "autoStopMic": "Auto Stop Mic When AI Start Speaking",

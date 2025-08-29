@@ -74,6 +74,9 @@ export interface ModelInfo {
 
   /** Enable idle audio playback */
   enableIdleAudio?: boolean;
+
+  /** Idle motion interval in seconds */
+  idleMotionInterval?: number;
 }
 
 /**
@@ -94,6 +97,7 @@ const DEFAULT_CONFIG = {
   modelInfo: {
     scrollToResize: true,
     enableIdleAudio: true, // 默认启用Idle音频
+    idleMotionInterval: 30.0, // 默认30秒间隔
   } as ModelInfo | undefined,
   isLoading: false,
 };
@@ -148,6 +152,10 @@ export function Live2DConfigProvider({ children }: { children: React.ReactNode }
         "enableIdleAudio" in info
           ? info.enableIdleAudio
           : (modelInfo?.enableIdleAudio ?? true),
+      idleMotionInterval:
+        "idleMotionInterval" in info
+          ? info.idleMotionInterval
+          : (modelInfo?.idleMotionInterval ?? 5.0),
     });
   };
 

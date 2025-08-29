@@ -31,7 +31,9 @@
     "live2d": {
       "pointerInteractive": "鼠标交互",
       "scrollToResize": "启用滚轮缩放",
-      "enableIdleAudio": "启用待机动作音频"
+      "enableIdleAudio": "启用待机动作音频",
+      "idleMotionInterval": "待机动作间隔",
+      "idleMotionIntervalHelp": "待机动作之间的时间间隔（秒）。默认为30秒。最小0.1秒，最大60秒。"
     },
     "asr": {
       "autoStopMic": "AI开始说话时自动关闭麦克风",

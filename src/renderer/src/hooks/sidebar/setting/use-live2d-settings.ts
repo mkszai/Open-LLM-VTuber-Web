@@ -12,6 +12,7 @@ export const useLive2dSettings = () => {
     emotionMap: {},
     scrollToResize: true,
     enableIdleAudio: true,
+    idleMotionInterval: 30.0,
   };
 
   const [modelInfo, setModelInfoState] = useState<ModelInfo>(
@@ -34,7 +35,7 @@ export const useLive2dSettings = () => {
     if (Live2DConfigContext && modelInfo) {
       Live2DConfigContext.setModelInfo(modelInfo);
     }
-  }, [modelInfo.pointerInteractive, modelInfo.scrollToResize, modelInfo.enableIdleAudio]);
+  }, [modelInfo.pointerInteractive, modelInfo.scrollToResize, modelInfo.enableIdleAudio, modelInfo.idleMotionInterval]);
 
   const handleInputChange = (key: keyof ModelInfo, value: ModelInfo[keyof ModelInfo]): void => {
     setModelInfoState((prev) => ({ ...prev, [key]: value }));

@@ -152,14 +152,31 @@ export const useLive2DModel = ({
       }
     };
 
+    // Update the idle motion interval setting on the model when it changes
+    const updateIdleMotionIntervalSetting = () => {
+      const adapter = (window as any).getLAppAdapter?.();
+      if (adapter) {
+        const model = adapter.getModel();
+        if (model && typeof model.setIdleMotionInterval === 'function') {
+          const idleMotionInterval = modelInfo?.idleMotionInterval || 30.0; // Default to 30 seconds if undefined
+          model.setIdleMotionInterval(idleMotionInterval);
+          console.log(`[Live2D] Updated idleMotionInterval setting to: ${idleMotionInterval} seconds`);
+        }
+      }
+    };
+
     // Update the setting after a short delay to ensure the model is loaded
-    const timer = setTimeout(updateIdleAudioSetting, 1000);
+    const timer = setTimeout(() => {
+      updateIdleAudioSetting();
+      updateIdleMotionIntervalSetting();
+    }, 1000);
     
     // Also update the setting immediately if the model is already loaded
     updateIdleAudioSetting();
+    updateIdleMotionIntervalSetting();
     
     return () => clearTimeout(timer);
-  }, [modelInfo?.url, modelInfo?.kScale, modelInfo?.enableIdleAudio]);
+  }, [modelInfo?.url, modelInfo?.kScale, modelInfo?.enableIdleAudio, modelInfo?.idleMotionInterval]);
 
   const getModelPosition = useCallback(() => {
     const adapter = (window as any).getLAppAdapter?.();

@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { settingStyles } from './setting-styles';
 import { useLive2dSettings } from '@/hooks/sidebar/setting/use-live2d-settings';
-import { SwitchField } from './common';
+import { SwitchField, NumberField } from './common';
 
 interface live2DProps {
   onSave?: (callback: () => void) => () => void
@@ -51,6 +51,16 @@ function live2D({ onSave, onCancel }: live2DProps): JSX.Element {
         label={t('settings.live2d.enableIdleAudio')}
         checked={modelInfo.enableIdleAudio ?? true}
         onChange={(checked) => handleInputChange('enableIdleAudio', checked)}
+      />
+      
+      <NumberField
+        label={t('settings.live2d.idleMotionInterval')}
+        value={modelInfo.idleMotionInterval ?? 5.0}
+        onChange={(value) => handleInputChange('idleMotionInterval', parseFloat(value) || 5.0)}
+        min={0.1}
+        max={60}
+        step={0.5}
+        help={t('settings.live2d.idleMotionIntervalHelp')}
       />
     </Stack>
   );
